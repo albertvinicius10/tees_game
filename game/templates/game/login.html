@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ESBOÇO</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5; /* Cor de fundo suave */
+            margin: 0; /* Remove margens padrão do body */
+        }
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px; /* Bordas mais arredondadas */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Sombra mais pronunciada */
+            text-align: center;
+            width: 320px; /* Largura ajustada para o design */
+            box-sizing: border-box; /* Inclui padding na largura total */
+        }
+        .logo-container {
+            width: 150px; /* Tamanho da área do logo */
+            height: 150px;
+            background-color: #e0f2f7; /* Fundo azul claro */
+            border: 2px solid #b3e5fc; /* Borda azul clara */
+            border-radius: 25px; /* Bordas arredondadas do container do logo */
+            margin: 0 auto 30px; /* Centraliza e adiciona margem inferior */
+            display: flex;
+            flex-direction: column; /* Para alinhar as formas e o texto */
+            justify-content: center;
+            align-items: center;
+            position: relative; /* Para posicionar as formas internas */
+        }
+        .logo-shapes {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px; /* Espaço entre as formas */
+            align-items: flex-end; /* Alinha as bases das formas */
+        }
+        .logo-shape {
+            width: 40px;
+            height: 40px;
+            border: 2px solid;
+        }
+        .logo-shape.green-square {
+            background-color: #81c784; /* Verde */
+            border-color: #4CAF50;
+            border-radius: 5px;
+        }
+        .logo-shape.yellow-triangle {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 40px solid #ffeb3b; /* Amarelo */
+            border-color: transparent transparent #ffd54f transparent; /* Borda amarela */
+            border-radius: 0;
+            position: relative; /* para alinhamento vertical */
+            margin-bottom: -5px; /* ajuste fino para alinhar com a base das outras formas */
+        }
+        .logo-shape.red-circle {
+            background-color: #ef9a9a; /* Vermelho */
+            border-color: #F44336;
+            border-radius: 50%; /* Círculo */
+        }
+        .logo-text {
+            position: absolute;
+            bottom: 20px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4fc3f7; /* Azul claro */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            letter-spacing: 1px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: none; /* Esconde o h2 "Entrar", pois o design não o tem explicitamente */
+        }
+        form p {
+            margin-bottom: 20px; /* Mais espaço entre os inputs */
+            text-align: left;
+        }
+        form label {
+            display: none; /* Esconde os labels, pois o design usa placeholder */
+        }
+        form input[type="text"],
+        form input[type="password"] {
+            width: 100%; /* Ocupa a largura total do container */
+            padding: 12px 15px; /* Mais padding para altura */
+            border: 2px solid #b3e5fc; /* Borda azul clara, como na imagem */
+            border-radius: 10px; /* Bordas arredondadas do input */
+            font-size: 1.1em;
+            color: #555;
+            background-color: #f8fcff; /* Fundo levemente azulado */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08); /* Sombra interna sutil */
+            box-sizing: border-box; /* Inclui padding e borda na largura total */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        form input[type="text"]:focus,
+        form input[type="password"]:focus {
+            border-color: #4fc3f7; /* Borda azul mais escura ao focar */
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.3); /* Anel de foco azul claro */
+        }
+        form input::placeholder {
+            color: #a7d9f7; /* Cor do placeholder azul claro */
+            opacity: 1; /* Garante que o placeholder seja visível */
+        }
+
+        form button {
+            background-color: #90caf9; /* Azul mais claro */
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px; /* Bordas arredondadas do botão */
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%; /* Ocupa a largura total */
+            margin-top: 20px; /* Mais margem superior */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Sombra para o botão */
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        form button:hover {
+            background-color: #64b5f6; /* Azul mais escuro ao hover */
+            transform: translateY(-2px); /* Efeito de elevação sutil */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        }
+        form button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .links {
+            margin-top: 25px; /* Mais espaço */
+            font-size: 0.95em;
+        }
+        .links a {
+            color: #64b5f6; /* Azul para links */
+            text-decoration: none;
+            margin: 0 10px; /* Espaço entre links */
+            transition: color 0.2s ease;
+        }
+        .links a:hover {
+            text-decoration: underline;
+            color: #2196f3; /* Azul mais escuro ao hover */
+        }
+        .errorlist {
+            color: #F44336; /* Vermelho para erros */
+            list-style-type: none;
+            padding: 0;
+            margin-top: -10px; /* Ajusta a margem para ficar mais próximo do input */
+            margin-bottom: 10px; /* Margem inferior para o próximo elemento */
+            font-size: 0.8em;
+            text-align: left;
+        }
+        .errorlist li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-container">
+            <div class="logo-shapes">
+                <div class="logo-shape green-square"></div>
+                <div class="logo-shape yellow-triangle"></div>
+                <div class="logo-shape red-circle"></div>
+            </div>
+            <div class="logo-text">ESBOÇO</div>
+        </div>
+        
+        {# O h2 está oculto via CSS, mas mantido para semântica se necessário #}
+        <h2>Entrar</h2> 
+
+        {# Mensagens de erro ou sucesso do Django #}
+        {% if messages %}
+            <ul class="errorlist">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {# Renderiza os campos individualmente para ter controle total do HTML/CSS #}
+            {# O campo username agora é o E-mail #}
+            <p>
+                {# O label está oculto via CSS #}
+                <label for="id_username">E-mail</label> 
+                <input type="text" name="username" id="id_username" placeholder="usuário" required>
+                {# Exibe erros específicos do campo username/email #}
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            <p>
+                {# O label está oculto via CSS #}
+                <label for="id_password">Senha</label>
+                <input type="password" name="password" id="id_password" placeholder="Senha" required>
+                {# Exibe erros específicos do campo password #}
+                {% if form.password.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </p>
+            {# Erros não específicos de campo (ex: credenciais inválidas) #}
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <button type="submit">Entrar</button>
+        </form>
+        <div class="links">
+            <a href="#">Esqueci minha senha</a>
+            <a href="{% url 'register' %}">Cadastre-se aqui</a>
+        </div>
+    </div>
+</body>
+</html>

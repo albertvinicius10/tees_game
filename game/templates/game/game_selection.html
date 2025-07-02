@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha um jogo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .game-selection-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 600px; /* Ajustado para caber 2 colunas */
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+            gap: 20px; /* Espaço entre os itens */
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .game-item {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80px;
+            transition: background-color 0.3s ease;
+        }
+        .game-item:hover {
+            background-color: #e0e0e0;
+        }
+        /* Cores específicas para cada botão, como no seu design */
+        .drag-drop { background-color: #ffe0b2; } /* Laranja claro */
+        .drag-drop:hover { background-color: #ffd180; }
+
+        .visual-comp { background-color: #c8e6c9; } /* Verde claro */
+        .visual-comp:hover { background-color: #a5d6a7; }
+
+        .quiz { background-color: #bbdefb; } /* Azul claro */
+        .quiz:hover { background-color: #90caf9; }
+
+        .vertices-challenge { background-color: #ffccbc; } /* Vermelho claro */
+        .vertices-challenge:hover { background-color: #ffab91; }
+
+        .assemble-figure { background-color: #e1bee7; } /* Roxo claro */
+        .assemble-figure:hover { background-color: #ce93d8; }
+
+        .logout-link {
+            margin-top: 30px;
+            font-size: 0.9em;
+        }
+        .logout-link a {
+            color: #d33434;
+            text-decoration: none;
+        }
+        .logout-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-selection-container">
+        <h2>Escolha um jogo</h2>
+        <div class="game-grid">
+            <a href="{% url 'drag_and_drop_game' %}" class="game-item drag-drop">Arraste e Solte</a>
+            <a href="{% url 'visual_comparison_game' %}" class="game-item visual-comp">Comparação Visual</a>
+            <a href="{% url 'quiz_game' %}" class="game-item quiz">Quiz</a>
+            <a href="{% url 'vertices_challenge_game' %}" class="game-item vertices-challenge">Desafio dos Vértices</a>
+            <a href="{% url 'assemble_figure_game' %}" class="game-item assemble-figure">Monte a figura</a>
+        </div>
+        <div class="logout-link">
+            <p>Olá, {{ request.user.username }}! <a href="{% url 'logout' %}">Sair</a></p>
+        </div>
+    </div>
+</body>
+</html>

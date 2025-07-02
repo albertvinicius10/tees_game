@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Figuras</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa;
+            margin: 0;
+            flex-direction: column;
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #26a69a;
+            color: white;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8em;
+            margin-right: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .header a:hover {
+            transform: translateX(-5px);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 700px;
+            margin-top: 100px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #26a69a;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .question-text {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            color: #555;
+        }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2x2 grid */
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .choice-option {
+            width: 180px; /* Tamanho do contêiner da escolha */
+            height: 180px;
+            margin: 0 auto; /* Centraliza a caixa dentro da célula da grid */
+            border: 3px solid #b3e5fc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #f0f8ff;
+            position: relative;
+        }
+        .choice-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .choice-option.selected {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 5px #90caf9;
+        }
+        .choice-option.correct {
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 5px #a5d6a7;
+        }
+        .choice-option.incorrect {
+            border-color: #F44336;
+            box-shadow: 0 0 0 5px #ffcdd2;
+        }
+
+        /* Formas internas, reutilizando estilos */
+        .inner-shape-quiz { /* Usar um nome diferente para evitar conflito */
+            width: 140px;
+            height: 140px;
+            background-color: transparent;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: none;
+            border: none;
+        }
+        .inner-shape-quiz.triangle { background-color: #bbdefb; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .inner-shape-quiz.square { background-color: #ffcdd2; border-radius: 8px; }
+        .inner-shape-quiz.pentagon { background-color: #fff9c4; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+        .inner-shape-quiz.hexagon { background-color: #d1c4e9; clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%); }
+        .inner-shape-quiz.circle { background-color: #c8e6c9; border-radius: 50%; }
+        .inner-shape-quiz.octagon { background-color: #ffecb3; clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); }
+
+        .feedback {
+            margin-top: 30px;
+            font-size: 1.4em;
+            font-weight: bold;
+            min-height: 1.5em;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feedback.correct { color: #4CAF50; }
+        .feedback.incorrect { color: #F44336; }
+
+        .buttons-container {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .action-button {
+            background-color: #03a9f4;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease-out, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-button:hover { background-color: #0288d1; transform: translateY(-2px); }
+        .action-button:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .check-button { background-color: #4CAF50; }
+        .check-button:hover { background-color: #388E3C; }
+        .next-question-button { background-color: #ff9800; }
+        .next-question-button:hover { background-color: #fb8c00; }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .game-container { padding: 20px; }
+            .question-text { font-size: 1.2em; }
+            .choices-grid { grid-template-columns: 1fr; gap: 15px; }
+            .choice-option { width: 150px; height: 150px; }
+            .inner-shape-quiz { width: 110px; height: 110px; }
+            .buttons-container { flex-direction: column; gap: 10px; }
+            .action-button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'game_selection' %}">&#8592;</a>
+        <h1>Quiz de Figuras</h1>
+    </div>
+
+    <div class="game-container">
+        <h2 class="question-text" id="question-text">Qual dessas figuras é um hexágono?</h2>
+        
+        <div class="choices-grid" id="choices-grid">
+            </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="buttons-container">
+            <button class="action-button next-question-button" id="next-question-button">Próxima Pergunta</button>
+            <button class="action-button check-button" id="check-button">Verificar Resposta</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const questionTextElement = document.getElementById('question-text');
+            const choicesGrid = document.getElementById('choices-grid');
+            const feedbackDiv = document.getElementById('feedback');
+            const checkButton = document.getElementById('check-button');
+            const nextQuestionButton = document.getElementById('next-question-button');
+
+            let currentCorrectShapeType = '';
+            let selectedChoiceElement = null;
+
+            // Definição das formas (reutilizando a lógica dos vértices)
+            const shapeDefinitions = [
+                { type: 'triangle', name: 'triângulo', vertices: 3 },
+                { type: 'square', name: 'quadrado', vertices: 4 },
+                { type: 'pentagon', name: 'pentágono', vertices: 5 },
+                { type: 'hexagon', name: 'hexágono', vertices: 6 },
+                { type: 'octagon', name: 'octógono', vertices: 8 },
+                { type: 'circle', name: 'círculo', vertices: 0 } // Vértices 0 para círculo
+            ];
+
+            // Função auxiliar para embaralhar um array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function generateQuestion() {
+                // Limpa estado anterior
+                choicesGrid.innerHTML = '';
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+                selectedChoiceElement = null;
+                checkButton.disabled = false; // Habilita o botão de verificar
+
+                // 1. Seleciona a figura correta para a pergunta
+                const correctShape = shapeDefinitions[Math.floor(Math.random() * shapeDefinitions.length)];
+                currentCorrectShapeType = correctShape.type;
+                questionTextElement.textContent = `Qual dessas figuras é um ${correctShape.name}?`;
+
+                // 2. Coleta as 4 opções (1 correta + 3 incorretas)
+                let availableChoices = [...shapeDefinitions];
+                // Filtra para remover a correta temporariamente para pegar distratores
+                let distractorPool = availableChoices.filter(s => s.type !== correctShape.type);
+                shuffleArray(distractorPool);
+
+                const choicesForRound = [correctShape]; // A primeira opção é a correta
+
+                // Pega 3 distratores (se houver o suficiente)
+                for (let i = 0; i < 3 && i < distractorPool.length; i++) {
+                    choicesForRound.push(distractorPool[i]);
+                }
+                
+                // Se não houver 4 tipos de formas diferentes o suficiente, duplica algumas
+                while (choicesForRound.length < 4) {
+                    const randomDistractor = distractorPool[Math.floor(Math.random() * distractorPool.length)];
+                    choicesForRound.push(randomDistractor);
+                }
+
+                shuffleArray(choicesForRound); // Embaralha as opções para não ter a correta sempre na mesma posição
+
+                // 3. Cria e adiciona as opções ao grid
+                choicesForRound.forEach(shape => {
+                    const choiceOptionDiv = document.createElement('div');
+                    choiceOptionDiv.classList.add('choice-option');
+                    choiceOptionDiv.dataset.type = shape.type; // Armazena o tipo para verificação
+
+                    const innerShapeDiv = document.createElement('div');
+                    innerShapeDiv.classList.add('inner-shape-quiz', shape.type); // Adiciona a classe da forma
+                    choiceOptionDiv.appendChild(innerShapeDiv);
+
+                    choiceOptionDiv.addEventListener('click', () => selectChoice(choiceOptionDiv));
+                    choicesGrid.appendChild(choiceOptionDiv);
+                });
+            }
+
+            function selectChoice(choiceElement) {
+                if (selectedChoiceElement) {
+                    selectedChoiceElement.classList.remove('selected', 'correct', 'incorrect');
+                }
+                choiceElement.classList.add('selected');
+                selectedChoiceElement = choiceElement;
+                
+                // Limpa feedback ao selecionar
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+            }
+
+            function checkAnswer() {
+                if (!selectedChoiceElement) {
+                    feedbackDiv.textContent = 'Por favor, selecione uma figura primeiro!';
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    return;
+                }
+
+                checkButton.disabled = true; // Desabilita o botão após verificar
+
+                const selectedType = selectedChoiceElement.dataset.type;
+
+                if (selectedType === currentCorrectShapeType) {
+                    feedbackDiv.textContent = 'Correto! Você acertou.';
+                    feedbackDiv.classList.remove('incorrect');
+                    feedbackDiv.classList.add('correct', 'show');
+                    selectedChoiceElement.classList.add('correct');
+                } else {
+                    feedbackDiv.textContent = `Incorreto. A figura correta era o ${shapeDefinitions.find(s => s.type === currentCorrectShapeType).name}.`;
+                    feedbackDiv.classList.remove('correct');
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    selectedChoiceElement.classList.add('incorrect');
+                    
+                    // Mostra qual era a correta
+                    document.querySelectorAll('.choice-option').forEach(option => {
+                        if (option.dataset.type === currentCorrectShapeType) {
+                            option.classList.add('correct');
+                        }
+                    });
+                }
+            }
+
+            // Event Listeners
+            checkButton.addEventListener('click', checkAnswer);
+            nextQuestionButton.addEventListener('click', generateQuestion);
+
+            // Inicia o jogo
+            generateQuestion();
+        });
+    </script>
+</body>
+</html>

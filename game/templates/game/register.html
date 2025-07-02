@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - ESBOÇO</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        .register-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 320px;
+            box-sizing: border-box;
+        }
+        h2 {
+            color: #26a69a;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+        form p {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        form input[type="text"],
+        form input[type="email"], /* Mantenha se quiser para compatibilidade de estilo, mas o UserCreationForm não o gera */
+        form input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #b3e5fc;
+            border-radius: 10px;
+            font-size: 1.1em;
+            color: #555;
+            background-color: #f8fcff;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        form input[type="text"]:focus,
+        form input[type="email"]:focus,
+        form input[type="password"]:focus {
+            border-color: #4fc3f7;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.3);
+        }
+        form input::placeholder { /* Pode não ser usado pelo form.as_p, mas manter */
+            color: #a7d9f7;
+            opacity: 1;
+        }
+
+        form button {
+            background-color: #90caf9;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        form button:hover {
+            background-color: #64b5f6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        }
+        form button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .login-link {
+            margin-top: 25px;
+            font-size: 0.95em;
+        }
+        .login-link a {
+            color: #64b5f6;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+            color: #2196f3;
+        }
+        .errorlist {
+            color: #F44336;
+            list-style-type: none;
+            padding: 0;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 0.8em;
+            text-align: left;
+        }
+        .errorlist li {
+            margin-bottom: 5px;
+        }
+        .helptext {
+            font-size: 0.8em;
+            color: #777;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h2>Cadastro</h2>
+        
+        {# Mensagens de erro ou sucesso do Django #}
+        {% if messages %}
+            <ul class="errorlist">
+                {% for message in messages %}
+                    <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {# Renderiza os campos do formulário como parágrafos (Username, Senha, Confirmação) #}
+            {{ form.as_p }} 
+
+            {# Erros que não estão ligados a nenhum campo específico (ex: senhas não batem) #}
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <button type="submit">Registrar</button>
+        </form>
+        <div class="login-link">
+            Já tem uma conta? <a href="{% url 'login' %}">Faça login aqui</a>
+        </div>
+    </div>
+</body>
+</html>

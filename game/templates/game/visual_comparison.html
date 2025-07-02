@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparação Visual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa;
+            margin: 0;
+            flex-direction: column;
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #26a69a;
+            color: white;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8em;
+            margin-right: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .header a:hover {
+            transform: translateX(-5px);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            margin-top: 100px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #26a69a;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .question {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            color: #555;
+        }
+        .shapes-display {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .shape-option {
+            width: 150px;
+            height: 150px;
+            border: 3px solid #b3e5fc; /* Borda padrão */
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: #f0f8ff; /* Fundo suave */
+            position: relative;
+        }
+        .shape-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .shape-option.selected {
+            border-color: #2196f3; /* Azul mais escuro quando selecionado */
+            box-shadow: 0 0 0 5px #90caf9; /* Anel azul claro */
+        }
+        .shape-option.correct {
+            border-color: #4CAF50; /* Verde */
+            box-shadow: 0 0 0 5px #a5d6a7;
+        }
+        .shape-option.incorrect {
+            border-color: #F44336; /* Vermelho */
+            box-shadow: 0 0 0 5px #ffcdd2;
+        }
+
+        /* Base para as formas internas */
+        .inner-shape {
+            width: 100px; /* Tamanho da forma dentro do contêiner */
+            height: 100px;
+            background-color: transparent;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: none; /* Não precisa de sombra aqui */
+            border: none;
+        }
+        /* Cores e clip-paths para as formas */
+        .inner-shape.square { background-color: #ffcdd2; border-radius: 8px; }
+        .inner-shape.triangle { background-color: #bbdefb; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .inner-shape.pentagon { background-color: #fff9c4; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+        .inner-shape.hexagon { background-color: #d1c4e9; clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%); }
+
+        .feedback {
+            margin-top: 30px;
+            font-size: 1.4em;
+            font-weight: bold;
+            min-height: 1.5em;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feedback.correct { color: #4CAF50; }
+        .feedback.incorrect { color: #F44336; }
+
+        .buttons-container {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .action-button {
+            background-color: #03a9f4;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease-out, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-button:hover {
+            background-color: #0288d1;
+            transform: translateY(-2px);
+        }
+        .action-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .check-button { background-color: #4CAF50; }
+        .check-button:hover { background-color: #388E3C; }
+        .generate-button { background-color: #ff9800; } /* Laranja */
+        .generate-button:hover { background-color: #fb8c00; }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+            .shapes-display {
+                flex-direction: column;
+            }
+            .shape-option {
+                width: 120px;
+                height: 120px;
+            }
+            .inner-shape {
+                width: 80px;
+                height: 80px;
+            }
+            .question {
+                font-size: 1.2em;
+            }
+            .buttons-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .action-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'game_selection' %}">&#8592;</a>
+        <h1>Comparação Visual</h1>
+    </div>
+
+    <div class="game-container">
+        <h2>Qual figura tem o maior número de lados?</h2>
+        
+        <div class="shapes-display">
+            <div class="shape-option" data-shape-index="0">
+                <div class="inner-shape"></div>
+            </div>
+            <div class="shape-option" data-shape-index="1">
+                <div class="inner-shape"></div>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="buttons-container">
+            <button class="action-button generate-button" id="generate-button">Gerar Novas Figuras</button>
+            <button class="action-button check-button" id="check-button">Verificar Resposta</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const shapeOptions = document.querySelectorAll('.shape-option');
+            const feedbackDiv = document.getElementById('feedback');
+            const generateButton = document.getElementById('generate-button');
+            const checkButton = document.getElementById('check-button');
+
+            let selectedShapeIndex = null;
+            let currentShapes = []; // Armazenará os objetos das formas geradas
+
+            const allShapeTypes = [
+                { type: 'triangle', sides: 3 },
+                { type: 'square', sides: 4 },
+                { type: 'pentagon', sides: 5 },
+                { type: 'hexagon', sides: 6 }
+                // Você pode adicionar mais formas aqui (ex: heptágono, octógono)
+            ];
+
+            function getRandomShape() {
+                return allShapeTypes[Math.floor(Math.random() * allShapeTypes.length)];
+            }
+
+            function generateNewShapes() {
+                // Limpa seleções e feedback anteriores
+                shapeOptions.forEach(option => {
+                    option.classList.remove('selected', 'correct', 'incorrect');
+                    option.querySelector('.inner-shape').className = 'inner-shape'; // Remove classes de forma
+                });
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+                selectedShapeIndex = null;
+                currentShapes = [];
+
+                // Garante que as duas formas sejam diferentes
+                let shape1 = getRandomShape();
+                let shape2 = getRandomShape();
+                while (shape1.type === shape2.type) {
+                    shape2 = getRandomShape();
+                }
+
+                currentShapes.push(shape1, shape2);
+
+                shapeOptions[0].querySelector('.inner-shape').classList.add(shape1.type);
+                shapeOptions[1].querySelector('.inner-shape').classList.add(shape2.type);
+            }
+
+            function checkAnswer() {
+                if (selectedShapeIndex === null) {
+                    feedbackDiv.textContent = 'Por favor, selecione uma figura primeiro!';
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    return;
+                }
+
+                const shape1 = currentShapes[0];
+                const shape2 = currentShapes[1];
+
+                let correctAnswerIndex;
+                if (shape1.sides > shape2.sides) {
+                    correctAnswerIndex = 0;
+                } else if (shape2.sides > shape1.sides) {
+                    correctAnswerIndex = 1;
+                } else {
+                    // Caso as formas tenham o mesmo número de lados (improvável com a lógica atual de getRandomShape, mas bom prever)
+                    feedbackDiv.textContent = 'As figuras têm o mesmo número de lados!';
+                    feedbackDiv.classList.remove('correct');
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    return;
+                }
+
+                if (selectedShapeIndex === correctAnswerIndex) {
+                    feedbackDiv.textContent = 'Correto! Você acertou.';
+                    feedbackDiv.classList.remove('incorrect');
+                    feedbackDiv.classList.add('correct', 'show');
+                    shapeOptions[selectedShapeIndex].classList.add('correct');
+                    // Marcar a outra como incorreta visualmente se for o caso
+                    shapeOptions[1 - selectedShapeIndex].classList.add('incorrect'); // Pega o oposto do selecionado
+                } else {
+                    feedbackDiv.textContent = 'Incorreto. Tente novamente!';
+                    feedbackDiv.classList.remove('correct');
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    shapeOptions[selectedShapeIndex].classList.add('incorrect');
+                    // Marcar a correta visualmente
+                    shapeOptions[correctAnswerIndex].classList.add('correct');
+                }
+            }
+
+            // Event Listeners
+            shapeOptions.forEach((option, index) => {
+                option.addEventListener('click', () => {
+                    shapeOptions.forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect')); // Limpa seleções visuais
+                    option.classList.add('selected');
+                    selectedShapeIndex = index;
+                    feedbackDiv.textContent = ''; // Limpa feedback ao selecionar
+                    feedbackDiv.classList.remove('show');
+                });
+            });
+
+            generateButton.addEventListener('click', generateNewShapes);
+            checkButton.addEventListener('click', checkAnswer);
+
+            // Inicia o jogo
+            generateNewShapes();
+        });
+    </script>
+</body>
+</html>

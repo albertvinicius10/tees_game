@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arraste e Solte</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"> <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa;
+            margin: 0;
+            flex-direction: column;
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #26a69a;
+            color: white;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8em;
+            margin-right: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .header a:hover {
+            transform: translateX(-5px);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 1000px;
+            margin-top: 100px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #26a69a;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .shapes-pool {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+            min-height: 150px;
+            border: 2px dashed #b2dfdb;
+            background-color: #e0f2f7;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .shape, .placed-shape { /* Aplicar estilos base para ambos */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out, background-color 0.2s ease, border-color 0.2s ease;
+            position: relative; /* Para o span interno */
+        }
+        .shape {
+            width: 90px;
+            height: 90px;
+            cursor: grab;
+            border: 3px solid; /* Borda genérica para as formas */
+        }
+        .placed-shape {
+            width: 80px;
+            height: 80px;
+            cursor: pointer; /* Para arrastar de volta */
+            border: 2px solid; /* Borda para formas colocadas */
+            margin: 8px; /* Espaçamento entre formas colocadas */
+        }
+
+        .shape:active {
+            cursor: grabbing;
+        }
+        .shape.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        /* CORES BASE PARA AS FORMAS ARRASTÁVEIS E SUAS BORDAS */
+        .shape.square { background-color: #ffcdd2; border-color: #ef9a9a; border-radius: 8px; }
+        .shape.triangle { background-color: #bbdefb; border-color: #64b5f6; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border-radius: 0; }
+        .shape.pentagon { background-color: #fff9c4; border-color: #ffeb3b; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); border-radius: 0; }
+        .shape.hexagon { background-color: #d1c4e9; border-color: #9575cd; clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%); border-radius: 0; }
+
+        /* CORES PARA AS FORMAS JÁ COLOCADAS NAS CAIXAS */
+        .placed-shape.square { background-color: #ffab91; border-color: #ff7043; border-radius: 6px; }
+        .placed-shape.triangle { background-color: #64b5f6; border-color: #2196f3; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); border-radius: 0; }
+        .placed-shape.pentagon { background-color: #ffd54f; border-color: #fbc02d; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); border-radius: 0; }
+        .placed-shape.hexagon { background-color: #9575cd; border-color: #673ab7; clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%); border-radius: 0; }
+
+        /* Ajuste para o texto dentro das formas (especialmente triângulo) */
+        .shape span, .placed-shape span {
+            position: absolute; /* Permite posicionar o texto de forma flexível */
+            text-align: center;
+            white-space: nowrap; /* Evita quebra de linha */
+            padding: 0 5px; /* Pequeno padding para não tocar a borda */
+        }
+        .shape.triangle span, .placed-shape.triangle span {
+            top: 45%; /* Ajuste vertical */
+            left: 50%;
+            transform: translate(-50%, -50%); /* Centraliza o texto */
+            font-size: 0.8em; /* Ajuste para caber melhor */
+        }
+        /* Ajustes para outras formas se o texto ficar muito grande */
+        .shape.pentagon span, .placed-shape.pentagon span,
+        .shape.hexagon span, .placed-shape.hexagon span {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+        }
+
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .category-box {
+            background-color: #e3f2fd;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px dashed #90caf9;
+            min-width: 200px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease-out, border-color 0.2s ease-out;
+        }
+        .category-box.drag-over {
+            background-color: #bbdefb;
+            border-color: #2196f3;
+        }
+
+        /* Cores específicas para as caixas de categoria */
+        .category-box[data-category="triangles"] { background-color: #c8e6c9; border-color: #81c784; }
+        .category-box[data-category="squares"] { background-color: #ffe0b2; border-color: #ffb74d; }
+        .category-box[data-category="pentagons"] { background-color: #ffecb3; border-color: #ffd54f; }
+        .category-box[data-category="hexagons"] { background-color: #d1c4e9; border-color: #9575cd; }
+
+
+        .category-box h3 {
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .feedback {
+            margin-top: 30px;
+            font-size: 1.4em;
+            font-weight: bold;
+            min-height: 1.5em;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feedback.correct { color: #4CAF50; }
+        .feedback.incorrect { color: #F44336; }
+
+        .buttons-container {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .action-button {
+            background-color: #03a9f4;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease-out, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-button:hover { background-color: #0288d1; transform: translateY(-2px); }
+        .action-button:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .check-button { background-color: #4CAF50; }
+        .check-button:hover { background-color: #388E3C; }
+        .reset-button { background-color: #f44336; }
+        .reset-button:hover { background-color: #d32f2f; }
+
+        /* Responsividade básica */
+        @media (max-width: 768px) {
+            .game-container { padding: 20px; width: 95%; }
+            .shapes-pool, .categories { flex-direction: column; align-items: center; }
+            .category-box { min-width: 80%; }
+            .header h1 { font-size: 1.2em; }
+            .header a { font-size: 1.2em; }
+            .shape, .placed-shape { width: 70px; height: 70px; }
+            .shape span, .placed-shape span { font-size: 0.7em; }
+            .shape.triangle span, .placed-shape.triangle span { font-size: 0.7em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'game_selection' %}">&#8592;</a>
+        <h1>Arraste e Solte</h1>
+    </div>
+
+    <div class="game-container">
+        <h2>Arraste e Solte cada forma no grupo a que ela pertence</h2>
+
+        <div class="shapes-pool" id="shapes-pool">
+            </div>
+
+        <div class="categories">
+            <div class="category-box" data-category="triangles">
+                <h3>Triângulos</h3>
+            </div>
+            <div class="category-box" data-category="squares">
+                <h3>Quadrados</h3>
+            </div>
+            <div class="category-box" data-category="pentagons">
+                <h3>Pentágonos</h3>
+            </div>
+            <div class="category-box" data-category="hexagons">
+                <h3>Hexágonos</h3>
+            </div>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="buttons-container">
+            <button class="action-button reset-button" id="reset-button">Reiniciar</button>
+            <button class="action-button check-button" id="check-button">Verificar Respostas</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const shapesPool = document.getElementById('shapes-pool');
+            const categoryBoxes = document.querySelectorAll('.category-box');
+            const feedbackDiv = document.getElementById('feedback');
+            const resetButton = document.getElementById('reset-button');
+            const checkButton = document.getElementById('check-button');
+
+            let currentDragged = null;
+
+            const allShapesData = [
+                { id: 's1', type: 'square', display: 'Quadrado 1' },
+                { id: 't1', type: 'triangle', display: 'Triângulo 1' },
+                { id: 's2', type: 'square', display: 'Quadrado 2' },
+                { id: 't2', type: 'triangle', display: 'Triângulo 2' },
+                { id: 't3', type: 'triangle', display: 'Triângulo 3' },
+                { id: 's3', type: 'square', display: 'Quadrado 3' },
+                { id: 'p1', type: 'pentagon', display: 'Pentágono 1' },
+                { id: 'h1', type: 'hexagon', display: 'Hexágono 1' },
+                { id: 'p2', type: 'pentagon', display: 'Pentágono 2' },
+                { id: 'h2', type: 'hexagon', display: 'Hexágono 2' },
+                { id: 's4', type: 'square', display: 'Quadrado 4' },
+                { id: 't4', type: 'triangle', display: 'Triângulo 4' },
+                { id: 'p3', type: 'pentagon', display: 'Pentágono 3' },
+                { id: 'h3', type: 'hexagon', display: 'Hexágono 3' },
+            ];
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function createShapeElement(shape, isPlaced = false) {
+                const div = document.createElement('div');
+                div.classList.add(isPlaced ? 'placed-shape' : 'shape', shape.type);
+                div.setAttribute('draggable', true);
+                div.dataset.id = shape.id;
+                div.dataset.type = shape.type;
+                
+                // Usar um span interno para o texto
+                const span = document.createElement('span');
+                span.textContent = shape.display;
+                div.appendChild(span);
+
+                return div;
+            }
+
+            function initializeGame() {
+                shapesPool.innerHTML = '';
+                categoryBoxes.forEach(box => {
+                    // Remove todas as formas dos caixas de categoria, exceto o h3
+                    Array.from(box.children).forEach(child => {
+                        if (child.classList.contains('placed-shape')) {
+                            box.removeChild(child);
+                        }
+                    });
+                    box.classList.remove('drag-over'); // Limpa feedback
+                });
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+
+                const selectedShapes = [...allShapesData];
+                shuffleArray(selectedShapes);
+                // Ajuste o número de formas na rodada, por exemplo, 6 a 8.
+                // Vamos pegar 6 como antes para não encher demais
+                const shapesForRound = selectedShapes.slice(0, 6); 
+
+                shapesForRound.forEach(shape => {
+                    shapesPool.appendChild(createShapeElement(shape));
+                });
+                addDragListeners();
+            }
+
+            function addDragListeners() {
+                // Remover listeners antigos para evitar duplicação se o jogo for reiniciado
+                document.querySelectorAll('.shape, .placed-shape').forEach(el => {
+                    el.removeEventListener('dragstart', handleDragStart);
+                    el.removeEventListener('dragend', handleDragEnd);
+                });
+                categoryBoxes.forEach(box => {
+                    box.removeEventListener('dragover', handleDragOver);
+                    box.removeEventListener('dragleave', handleDragLeave);
+                    box.removeEventListener('drop', handleDropCategory);
+                });
+                shapesPool.removeEventListener('dragover', handleDragOverPool);
+                shapesPool.removeEventListener('dragleave', handleDragLeavePool);
+                shapesPool.removeEventListener('drop', handleDropPool);
+
+
+                // Adicionar os novos listeners
+                document.querySelectorAll('.shape, .placed-shape').forEach(shapeEl => {
+                    shapeEl.addEventListener('dragstart', handleDragStart);
+                    shapeEl.addEventListener('dragend', handleDragEnd);
+                });
+
+                categoryBoxes.forEach(box => {
+                    box.addEventListener('dragover', handleDragOver);
+                    box.addEventListener('dragleave', handleDragLeave);
+                    box.addEventListener('drop', handleDropCategory);
+                });
+
+                shapesPool.addEventListener('dragover', handleDragOverPool);
+                shapesPool.addEventListener('dragleave', handleDragLeavePool);
+                shapesPool.addEventListener('drop', handleDropPool);
+            }
+            
+            function handleDragStart(e) {
+                currentDragged = e.target;
+                e.dataTransfer.setData('text/plain', e.target.dataset.id);
+                setTimeout(() => {
+                    e.target.classList.add('dragging');
+                }, 0);
+            }
+
+            function handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+                currentDragged = null;
+                checkAnswers(); // Verifica respostas após cada soltura/arrasto
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('drag-over');
+            }
+
+            function handleDragLeave(e) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+
+            function handleDropCategory(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('drag-over');
+
+                if (currentDragged) {
+                    const droppedShapeId = e.dataTransfer.getData('text/plain');
+                    const droppedShape = document.querySelector(`[data-id="${droppedShapeId}"]`);
+                    
+                    if (droppedShape) {
+                        droppedShape.remove();
+                        e.currentTarget.appendChild(createShapeElement(allShapesData.find(s => s.id === droppedShapeId), true));
+                        addDragListeners(); // Re-adiciona listeners para as novas formas
+                    }
+                }
+            }
+
+            function handleDragOverPool(e) {
+                e.preventDefault();
+                shapesPool.classList.add('drag-over');
+            }
+
+            function handleDragLeavePool(e) {
+                shapesPool.classList.remove('drag-over');
+            }
+
+            function handleDropPool(e) {
+                e.preventDefault();
+                shapesPool.classList.remove('drag-over');
+
+                if (currentDragged && currentDragged.parentNode.classList.contains('category-box')) {
+                    const droppedShapeId = e.dataTransfer.getData('text/plain');
+                    const droppedShape = document.querySelector(`[data-id="${droppedShapeId}"]`);
+                    if (droppedShape) {
+                        droppedShape.remove();
+                        shapesPool.appendChild(createShapeElement(allShapesData.find(s => s.id === droppedShapeId), false));
+                        addDragListeners();
+                    }
+                }
+            }
+
+            function checkAnswers() {
+                let allCorrect = true;
+                let correctlyPlacedCount = 0;
+                const totalShapesInPlay = document.querySelectorAll('.shape, .placed-shape').length; // Formas no pool + nas caixas
+
+                // Limpa bordas de feedback anteriores
+                document.querySelectorAll('.placed-shape').forEach(s => {
+                    s.style.borderColor = ''; // Limpa para a cor base definida no CSS
+                });
+
+                categoryBoxes.forEach(box => {
+                    const expectedCategory = box.dataset.category;
+                    Array.from(box.children).forEach(child => {
+                        if (child.classList.contains('placed-shape')) {
+                            const actualType = child.dataset.type + 's';
+                            if (actualType !== expectedCategory) {
+                                allCorrect = false;
+                                child.style.borderColor = '#F44336'; // Borda vermelha para erro
+                            } else {
+                                child.style.borderColor = '#4CAF50'; // Borda verde para acerto
+                                correctlyPlacedCount++;
+                            }
+                        }
+                    });
+                });
+
+                const currentShapesInPool = Array.from(shapesPool.children).filter(child => child.classList.contains('shape')).length;
+                const initialNumberOfShapes = allShapesData.slice(0, 6).length; // O número que foi gerado inicialmente
+                
+                // Se ainda houver formas no pool, ou o número de colocadas não é o total inicial, então não está "completo"
+                if (currentShapesInPool > 0 || correctlyPlacedCount < initialNumberOfShapes) {
+                    allCorrect = false; 
+                }
+
+                if (allCorrect && correctlyPlacedCount === initialNumberOfShapes) {
+                    feedbackDiv.textContent = 'Parabéns! Todas as formas estão nos lugares certos!';
+                    feedbackDiv.classList.remove('incorrect');
+                    feedbackDiv.classList.add('correct', 'show');
+                } else if (correctlyPlacedCount > 0 || currentShapesInPool < initialNumberOfShapes) {
+                    feedbackDiv.textContent = `Você colocou ${correctlyPlacedCount} de ${initialNumberOfShapes} formas corretamente. Continue tentando!`;
+                    feedbackDiv.classList.remove('correct');
+                    feedbackDiv.classList.add('incorrect', 'show');
+                } else {
+                    feedbackDiv.textContent = '';
+                    feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+                }
+            }
+
+            resetButton.addEventListener('click', initializeGame);
+            checkButton.addEventListener('click', checkAnswers);
+
+            initializeGame();
+        });
+    </script>
+</body>
+</html>

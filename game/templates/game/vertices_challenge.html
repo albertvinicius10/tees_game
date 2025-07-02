@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio dos Vértices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #e0f7fa;
+            margin: 0;
+            flex-direction: column;
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #26a69a;
+            color: white;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.8em;
+            margin-right: 20px;
+            transition: transform 0.2s ease-in-out;
+        }
+        .header a:hover {
+            transform: translateX(-5px);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .game-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 100px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: #26a69a;
+            margin-bottom: 30px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+        .question {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            color: #555;
+        }
+
+        .shape-display {
+            width: 180px; /* Tamanho do display da forma */
+            height: 180px;
+            margin: 0 auto 40px;
+            border: 2px solid #b3e5fc;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f8ff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Base para as formas internas (similar ao Comparação Visual) */
+        .inner-shape {
+            width: 140px; /* Tamanho da forma dentro do contêiner */
+            height: 140px;
+            background-color: transparent;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: none;
+            border: none;
+        }
+        /* Cores e clip-paths para as formas */
+        .inner-shape.triangle { background-color: #bbdefb; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+        .inner-shape.square { background-color: #ffcdd2; border-radius: 8px; }
+        .inner-shape.pentagon { background-color: #fff9c4; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); }
+        .inner-shape.hexagon { background-color: #d1c4e9; clip-path: polygon(50% 0%, 90% 25%, 90% 75%, 50% 100%, 10% 75%, 10% 25%); }
+        .inner-shape.circle { background-color: #c8e6c9; border-radius: 50%; } /* Adicionando Círculo */
+        .inner-shape.octagon { background-color: #ffecb3; clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); } /* Adicionando Octógono */
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 colunas para as respostas */
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .answer-button {
+            background-color: #e0f2f7; /* Azul claro para botões */
+            color: #555;
+            padding: 15px 20px;
+            border: 2px solid #b3e5fc;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .answer-button:hover {
+            background-color: #bbdefb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .answer-button.selected {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 4px #90caf9;
+        }
+        .answer-button.correct {
+            background-color: #a5d6a7; /* Verde claro */
+            border-color: #4CAF50;
+        }
+        .answer-button.incorrect {
+            background-color: #ffcdd2; /* Vermelho claro */
+            border-color: #F44336;
+        }
+
+        .feedback {
+            margin-top: 30px;
+            font-size: 1.4em;
+            font-weight: bold;
+            min-height: 1.5em;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feedback.correct { color: #4CAF50; }
+        .feedback.incorrect { color: #F44336; }
+
+        .bottom-buttons-container {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .action-button {
+            background-color: #03a9f4;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease-out, transform 0.1s ease-out;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-button:hover { background-color: #0288d1; transform: translateY(-2px); }
+        .action-button:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .listen-button {
+            background-color: #673ab7; /* Roxo */
+        }
+        .listen-button:hover {
+            background-color: #512da8;
+        }
+        .next-button {
+            background-color: #4CAF50; /* Verde */
+        }
+        .next-button:hover {
+            background-color: #388E3C;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+            .question {
+                font-size: 1.2em;
+            }
+            .answers-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 15px;
+            }
+            .answer-button {
+                padding: 12px 15px;
+                font-size: 1.1em;
+            }
+            .bottom-buttons-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .action-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'game_selection' %}">&#8592;</a>
+        <h1>Desafio dos Vértices</h1>
+    </div>
+
+    <div class="game-container">
+        <h2 id="question-text">Quantos vértices essa figura tem?</h2>
+        
+        <div class="shape-display">
+            <div class="inner-shape" id="current-shape"></div>
+        </div>
+
+        <div class="answers-grid" id="answers-grid">
+            </div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="bottom-buttons-container">
+            <button class="action-button listen-button" id="listen-button">Ouvir</button>
+            <button class="action-button next-button" id="next-question-button">Próxima Figura</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentShapeDisplay = document.getElementById('current-shape');
+            const answersGrid = document.getElementById('answers-grid');
+            const feedbackDiv = document.getElementById('feedback');
+            const listenButton = document.getElementById('listen-button');
+            const nextQuestionButton = document.getElementById('next-question-button');
+
+            let currentShape = null;
+            let currentCorrectAnswer = null;
+            let selectedAnswerButton = null;
+
+            // Definição das formas e seus vértices
+            const shapeData = [
+                { type: 'triangle', vertices: 3 },
+                { type: 'square', vertices: 4 },
+                { type: 'pentagon', vertices: 5 },
+                { type: 'hexagon', vertices: 6 },
+                { type: 'octagon', vertices: 8 }, // Adicionando Octógono
+                // Círculo tem 0 vértices, mas pode ser confuso para o jogo.
+                // { type: 'circle', vertices: 0 }
+            ];
+
+            // Função auxiliar para embaralhar um array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function generateQuestion() {
+                // Limpa o estado anterior
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+                answersGrid.innerHTML = ''; // Limpa botões de resposta
+                selectedAnswerButton = null;
+
+                // Seleciona uma forma aleatória
+                currentShape = shapeData[Math.floor(Math.random() * shapeData.length)];
+                currentCorrectAnswer = currentShape.vertices;
+
+                // Atualiza a exibição da forma
+                currentShapeDisplay.className = 'inner-shape ' + currentShape.type;
+
+                // Gera as opções de resposta
+                let possibleAnswers = new Set();
+                possibleAnswers.add(currentCorrectAnswer); // Garante que a resposta correta esteja lá
+
+                // Adiciona outras respostas aleatórias (distratores)
+                while (possibleAnswers.size < 3) { // Queremos 3 opções
+                    let randomAnswer = Math.floor(Math.random() * 10) + 1; // Números de 1 a 10
+                    if (randomAnswer !== currentCorrectAnswer && !possibleAnswers.has(randomAnswer)) {
+                         // Evita números que não fazem sentido para polígonos pequenos
+                        if ([3, 4, 5, 6, 8].includes(randomAnswer) || (currentCorrectAnswer > 6 && randomAnswer > currentCorrectAnswer - 3 && randomAnswer < currentCorrectAnswer + 3)) {
+                            possibleAnswers.add(randomAnswer);
+                        } else if (currentCorrectAnswer <= 6 && randomAnswer >= 3 && randomAnswer <= 8) {
+                             possibleAnswers.add(randomAnswer);
+                        }
+                    }
+                }
+                
+                let answersArray = Array.from(possibleAnswers);
+                shuffleArray(answersArray); // Embaralha as opções
+
+                answersArray.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.classList.add('answer-button');
+                    button.textContent = answer;
+                    button.dataset.value = answer; // Armazena o valor no dataset
+                    button.addEventListener('click', () => selectAnswer(button));
+                    answersGrid.appendChild(button);
+                });
+            }
+
+            function selectAnswer(button) {
+                // Remove a seleção de botões anteriores
+                if (selectedAnswerButton) {
+                    selectedAnswerButton.classList.remove('selected', 'correct', 'incorrect');
+                }
+                button.classList.add('selected');
+                selectedAnswerButton = button;
+                
+                // Limpa o feedback ao selecionar uma nova resposta
+                feedbackDiv.textContent = '';
+                feedbackDiv.classList.remove('show', 'correct', 'incorrect');
+
+                // Verifica a resposta imediatamente ao clicar (como no seu design)
+                checkAnswer();
+            }
+
+            function checkAnswer() {
+                if (!selectedAnswerButton) {
+                    feedbackDiv.textContent = 'Por favor, selecione uma resposta!';
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    return;
+                }
+
+                const selectedValue = parseInt(selectedAnswerButton.dataset.value);
+
+                if (selectedValue === currentCorrectAnswer) {
+                    feedbackDiv.textContent = 'Correto! Você acertou.';
+                    feedbackDiv.classList.remove('incorrect');
+                    feedbackDiv.classList.add('correct', 'show');
+                    selectedAnswerButton.classList.add('correct');
+                } else {
+                    feedbackDiv.textContent = `Incorreto. A resposta correta é ${currentCorrectAnswer}.`;
+                    feedbackDiv.classList.remove('correct');
+                    feedbackDiv.classList.add('incorrect', 'show');
+                    selectedAnswerButton.classList.add('incorrect');
+                    // Opcional: realçar a resposta correta
+                    document.querySelectorAll('.answer-button').forEach(btn => {
+                        if (parseInt(btn.dataset.value) === currentCorrectAnswer) {
+                            btn.classList.add('correct');
+                        }
+                    });
+                }
+            }
+
+            // Event Listeners
+            listenButton.addEventListener('click', () => {
+                const questionText = document.getElementById('question-text').textContent;
+                const shapeName = currentShape.type; // Ou use 'nome' se tiver no shapeData
+
+                // Crie uma frase mais completa para a leitura
+                let textToSpeak = `${questionText.replace('?', '')}. Essa é uma figura do tipo ${shapeName}.`;
+
+                // Adicione informações sobre vértices para confirmação
+                // textToSpeak += ` Quantos vértices ela tem?`; // Já está na pergunta, evite redundância
+
+                console.log('Botão "Ouvir" clicado para: ', textToSpeak);
+
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                    // Opcional: configurar voz (pode ser complexo devido à disponibilidade de vozes)
+                    // let voices = window.speechSynthesis.getVoices();
+                    // utterance.voice = voices.find(voice => voice.lang === 'pt-BR'); // Tente encontrar uma voz em português
+                    // utterance.rate = 0.9; // Velocidade da fala (0.1 a 10)
+                    // utterance.pitch = 1; // Tonalidade (0 a 2)
+                    window.speechSynthesis.speak(utterance);
+                } else {
+                    alert('Seu navegador não suporta a síntese de voz.');
+                }
+            });
+
+            nextQuestionButton.addEventListener('click', generateQuestion);
+
+            // Inicia o jogo
+            generateQuestion();
+        });
+    </script>
+</body>
+</html>
