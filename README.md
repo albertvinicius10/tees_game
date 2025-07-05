@@ -61,7 +61,3 @@ Um jogo educativo interativo desenvolvido em Django para ensinar geometria atrav
 - **Bordas vermelhas** = erro
 - **Rolagem automática** = mova o mouse para as bordas da tela
 - **Responsivo** = funciona em desktop, tablet e mobile
-
----
-
-*Desenvolvido com ❤️ para educação e diversão* 
