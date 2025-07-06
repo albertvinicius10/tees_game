@@ -15,6 +15,8 @@
             margin: 0;
             flex-direction: column;
             color: #333;
+            /* Suporte para rolagem automática durante arraste */
+            overflow-y: auto;
         }
         .header {
             width: 100%;
@@ -94,14 +96,14 @@
             position: relative; /* Para o span interno */
         }
         .shape {
-            width: 90px;
-            height: 90px;
+            width: 100px;
+            height: 100px;
             cursor: grab;
             border: 3px solid; /* Borda genérica para as formas */
         }
         .placed-shape {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             cursor: pointer; /* Para arrastar de volta */
             border: 2px solid; /* Borda para formas colocadas */
             margin: 8px; /* Espaçamento entre formas colocadas */
@@ -135,10 +137,13 @@
             padding: 0 5px; /* Pequeno padding para não tocar a borda */
         }
         .shape.triangle span, .placed-shape.triangle span {
-            top: 45%; /* Ajuste vertical */
+            top: 60%; /* Ajuste vertical para ficar mais baixo no triângulo */
             left: 50%;
             transform: translate(-50%, -50%); /* Centraliza o texto */
-            font-size: 0.8em; /* Ajuste para caber melhor */
+            font-size: 0.7em; /* Fonte menor para caber melhor */
+            max-width: 80%; /* Limita a largura do texto */
+            overflow: hidden; /* Esconde texto que ultrapassar */
+            text-overflow: ellipsis; /* Adiciona "..." se o texto for muito longo */
         }
         /* Ajustes para outras formas se o texto ficar muito grande */
         .shape.pentagon span, .placed-shape.pentagon span,
@@ -238,9 +243,13 @@
             .category-box { min-width: 80%; }
             .header h1 { font-size: 1.2em; }
             .header a { font-size: 1.2em; }
-            .shape, .placed-shape { width: 70px; height: 70px; }
+            .shape, .placed-shape { width: 80px; height: 80px; }
             .shape span, .placed-shape span { font-size: 0.7em; }
-            .shape.triangle span, .placed-shape.triangle span { font-size: 0.7em; }
+            .shape.triangle span, .placed-shape.triangle span { 
+                font-size: 0.6em; 
+                max-width: 85%; 
+                top: 65%; 
+            }
         }
     </style>
 </head>
@@ -288,6 +297,8 @@
             const checkButton = document.getElementById('check-button');
 
             let currentDragged = null;
+            let autoScrollInterval = null;
+            let scrollSpeed = 0;
 
             const allShapesData = [
                 { id: 's1', type: 'square', display: 'Quadrado 1' },
@@ -369,6 +380,8 @@
                 shapesPool.removeEventListener('dragleave', handleDragLeavePool);
                 shapesPool.removeEventListener('drop', handleDropPool);
 
+                // Remover listener de mousemove se existir
+                document.removeEventListener('mousemove', updateScrollSpeed);
 
                 // Adicionar os novos listeners
                 document.querySelectorAll('.shape, .placed-shape').forEach(shapeEl => {
@@ -385,19 +398,60 @@
                 shapesPool.addEventListener('dragover', handleDragOverPool);
                 shapesPool.addEventListener('dragleave', handleDragLeavePool);
                 shapesPool.addEventListener('drop', handleDropPool);
+
+                // Adicionar listener para mousemove durante o arraste
+                document.addEventListener('mousemove', updateScrollSpeed);
             }
             
+            function startAutoScroll() {
+                if (autoScrollInterval) return;
+                
+                autoScrollInterval = setInterval(() => {
+                    if (scrollSpeed !== 0) {
+                        window.scrollBy(0, scrollSpeed);
+                    }
+                }, 16); // ~60fps
+            }
+
+            function stopAutoScroll() {
+                if (autoScrollInterval) {
+                    clearInterval(autoScrollInterval);
+                    autoScrollInterval = null;
+                }
+                scrollSpeed = 0;
+            }
+
+            function updateScrollSpeed(e) {
+                const windowHeight = window.innerHeight;
+                const mouseY = e.clientY;
+                const scrollThreshold = 100; // Distância da borda para ativar rolagem
+                
+                if (mouseY < scrollThreshold) {
+                    // Mouse próximo ao topo - rolar para cima
+                    scrollSpeed = -Math.max(5, (scrollThreshold - mouseY) / 10);
+                } else if (mouseY > windowHeight - scrollThreshold) {
+                    // Mouse próximo à parte inferior - rolar para baixo
+                    scrollSpeed = Math.max(5, (mouseY - (windowHeight - scrollThreshold)) / 10);
+                } else {
+                    scrollSpeed = 0;
+                }
+            }
+
             function handleDragStart(e) {
                 currentDragged = e.target;
                 e.dataTransfer.setData('text/plain', e.target.dataset.id);
                 setTimeout(() => {
                     e.target.classList.add('dragging');
                 }, 0);
+                
+                // Iniciar rolagem automática
+                startAutoScroll();
             }
 
             function handleDragEnd(e) {
                 e.target.classList.remove('dragging');
                 currentDragged = null;
+                stopAutoScroll(); // Parar rolagem automática
                 checkAnswers(); // Verifica respostas após cada soltura/arrasto
             }
 
@@ -413,6 +467,7 @@
             function handleDropCategory(e) {
                 e.preventDefault();
                 e.currentTarget.classList.remove('drag-over');
+                stopAutoScroll(); // Parar rolagem automática
 
                 if (currentDragged) {
                     const droppedShapeId = e.dataTransfer.getData('text/plain');
@@ -438,6 +493,7 @@
             function handleDropPool(e) {
                 e.preventDefault();
                 shapesPool.classList.remove('drag-over');
+                stopAutoScroll(); // Parar rolagem automática
 
                 if (currentDragged && currentDragged.parentNode.classList.contains('category-box')) {
                     const droppedShapeId = e.dataTransfer.getData('text/plain');
@@ -497,6 +553,13 @@
                     feedbackDiv.classList.remove('show', 'correct', 'incorrect');
                 }
             }
+
+            // Adicionar listener para parar rolagem quando ESC for pressionado
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    stopAutoScroll();
+                }
+            });
 
             resetButton.addEventListener('click', initializeGame);
             checkButton.addEventListener('click', checkAnswers);
